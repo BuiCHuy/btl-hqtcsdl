@@ -93,4 +93,9 @@ class hoadon_controller extends Controller
         $cthd = cthd::where('mahd',$mahd)->get();
         return view('hoadon.chitiet',compact('cthd','hd'));
     }
+    public function quyDoiDiem($mahd)
+    {
+        DB::statement('EXEC proc_QuyDoiDiem ?', [$mahd]);
+        return redirect()->route('hoadon.index')->with('success', 'Quy đổi điểm thành công!');
+    }
 }

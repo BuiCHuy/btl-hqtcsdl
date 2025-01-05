@@ -296,7 +296,9 @@
                             <div class="d-flex flex-row">
                                 <a href="{{route('hoadon.chitiet',$hd->mahd)}}" class="btn btn-info d-flex align-items-center justify-content-center"><i class="bi bi-eye"></i></a>
                                 <a href="{{route('hoadon.edit',$hd->mahd)}}" class="btn btn-primary d-flex align-items-center justify-content-center"><i class="bi bi-pen"></i></a>
-
+                                <a href="{{ route('hoadons.quyDoiDiem', $hd->mahd) }}" class="btn btn-success">
+                                    Quy Đổi Điểm
+                                </a>
 
                                 <form action="{{route('hoadon.destroy',$hd->mahd)}}" class="btn btn-danger" method="POST">
                                     @csrf
