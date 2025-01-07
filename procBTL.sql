@@ -6,7 +6,14 @@ as begin
 	update chitiethoadon set thanhtien=isnull(soluong*(select dongia from mathang where mathang.mamh=chitiethoadon.mamh),0)
 end
 exec updatethanhtien
-select * from chitiethoadon
+
+
+create proc updatett1cthd @mahd char(10),@mamh char(10)
+as begin
+	update chitiethoadon set thanhtien=isnull(soluong*(select dongia from mathang where mathang.mamh=chitiethoadon.mamh),0)
+	where mahd = @mahd and mamh=@mamh
+end
+
 
 --proc cập nhật tổng tiền
 create proc updatetongtien
@@ -64,6 +71,12 @@ create proc updatecthd @mahd char(10),@mamh char(10),@sl int
 as begin
 	if exists (select * from chitiethoadon where mahd=@mahd and mamh=@mamh)
 		update chitiethoadon set soluong=@sl where mahd=@mahd and mamh=@mamh
+end
+--proc xoá cthd
+create proc deletecthd @mahd char(10),@mamh char(10)
+as begin
+	if exists (select * from chitiethoadon where mahd=@mahd and mamh=@mamh)
+		delete from chitiethoadon where  mahd=@mahd and mamh=@mamh
 end
 
 --------------- HOANG -------------------
@@ -226,3 +239,67 @@ as begin
 		where mahd=@mahd
 	end
 end
+
+-- proc in ra từng mã khách hàng, điểm tích lũy 
+create proc sp_in_thetichdiem
+as
+begin
+    declare @makh char(10), @diemtichluy int
+
+    declare cur_thetichdiem cursor for
+    select makh, diemtichluy
+    from thetichdiem
+
+    open cur_thetichdiem
+    fetch next from cur_thetichdiem into @makh, @diemtichluy
+    while (@@FETCH_STATUS = 0)
+    begin
+        print 'Mã khách hàng: ' + @makh
+        print 'Điểm tích lũy: ' + cast(@diemtichluy as nvarchar(10))
+
+        fetch next from cur_thetichdiem into @makh, @diemtichluy
+    end
+
+    close cur_thetichdiem
+    deallocate cur_thetichdiem
+end
+
+EXEC sp_in_thetichdiem
+drop proc sp_in_thetichdiem
+
+-- proc in ra từng mã nhân viên, ngày thanh toán lương 
+create proc sp_in_thanhtoanluong
+as
+begin
+    declare @manv char(10), @ngaythanhtoan date
+
+    declare cur_thanhtoanluong cursor for
+    select manv, ngaythanhtoan
+    from thanhtoanluong
+
+    open cur_thanhtoanluong
+    fetch next from cur_thanhtoanluong into @manv, @ngaythanhtoan
+    while (@@FETCH_STATUS = 0)
+    begin
+        print 'Mã nhân viên: ' + @manv
+        print 'Ngày thanh toán: ' + cast(@ngaythanhtoan as nvarchar(10))
+
+       fetch next from cur_thanhtoanluong into @manv, @ngaythanhtoan
+    end
+    close cur_thanhtoanluong
+    deallocate cur_thanhtoanluong
+end
+
+EXEC sp_in_thanhtoanluong
+drop proc sp_in_thanhtoanluong
+
+insert into thanhtoanluong ( manv) values  ('NV2')
+select * from thanhtoanluong
+
+-- proc them lịch sử thanh toán
+create proc insertThanhToanLuong @manv char(10)
+as begin
+	insert into thanhtoanluong(manv) values(@manv)
+end
+
+

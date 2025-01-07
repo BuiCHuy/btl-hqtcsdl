@@ -1,11 +1,4 @@
 ﻿-------------------------- HUY 
---function trả về tổng tiền 1 hóa đơn
-create function tongtien1hoadon(@mahd char(10))
-returns int
-as begin
-	return (select tongtien from hoadon where mahd=@mahd)
-end
-
 --function trả về doanh thu theo ngày
 create function doanhthu(@ngayvao date,@ngayra date)
 returns int
@@ -48,7 +41,9 @@ as begin
 	return @soluong
 end
 
+
 print dbo.f_SanPhamHayMua('KH1', 'MH2')
+SELECT OBJECT_ID('dbo.f_SanPhamHayMua');
 
 
 -- viet ham tra ve so tien thu duoc cua 1 mat hang
