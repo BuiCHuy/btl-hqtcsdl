@@ -19,17 +19,6 @@ end
 create proc updatetongtien
 as begin
 	update hoadon set tongtien=isnull((select sum(thanhtien) from chitiethoadon where chitiethoadon.mahd=hoadon.mahd),0)
-	declare cur cursor for select makh,tongtien from hoadon
-	open cur
-	declare @makh char(10),@tongtien int
-	fetch next from cur into @makh,@tongtien
-	while(@@FETCH_STATUS=0)
-	begin
-		exec proc_TichDiem @makh,@tongtien
-		fetch next from cur into @makh,@tongtien
-	end
-	close cur
-	deallocate cur
 end
 exec updatetongtien
 select * from hoadon
@@ -78,7 +67,11 @@ as begin
 	if exists (select * from chitiethoadon where mahd=@mahd and mamh=@mamh)
 		delete from chitiethoadon where  mahd=@mahd and mamh=@mamh
 end
-
+--proc thanh toán 
+create proc thanhtoan @mahd char(10)
+as begin
+	update hoadon set TTthanhtoan = 1 where mahd=@mahd
+end
 --------------- HOANG -------------------
 -- proc them, sua, xoa loai hang
 create proc p_InsertLoaiHang
@@ -133,6 +126,8 @@ as begin
 	set soluongtrongkho = soluongtrongkho - @soluong
 	where mamh = @mamh
 end
+
+
 
 --- DUC ANH
 --proc thêm khách hàng
@@ -206,21 +201,20 @@ exec proc_TichDiem 'KH1',400000
 select * from thetichdiem
 
 --proc quy đổi điểm và sử dụng điểm tích lũy để trừ vào tổng tiền
-create proc proc_QuyDoiDiem
+alter proc proc_QuyDoiDiem
 @mahd char(10) 
 as begin 
 	declare @idThe int
 	select @idThe = mathe
 	from hoadon,thetichdiem 
 	where hoadon.makh = thetichdiem.makh and hoadon.mahd= @mahd 
-
 	if((select diemtichluy from thetichdiem where mathe=@idThe)*1000 <= (select tongtien from hoadon where mahd = @mahd))
 	begin
 		update hoadon
 		set tongtien  = (
-			select SUM(thanhtien) 
-			from chitiethoadon
-			where chitiethoadon.mahd = @mahd
+			select tongtien 
+			from hoadon
+			where hoadon.mahd = @mahd
 			) - dbo.fnc_QuyDoiDiem (@idThe)
 		where hoadon.mahd=@mahd 
 
@@ -239,7 +233,6 @@ as begin
 		where mahd=@mahd
 	end
 end
-
 -- proc in ra từng mã khách hàng, điểm tích lũy 
 create proc sp_in_thetichdiem
 as

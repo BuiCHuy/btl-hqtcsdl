@@ -85,7 +85,7 @@ end
 ---------- HOANG ------------------
 
 -- -- trigger ko cho gia nhap > gia ban
-create trigger tri_giaNhapLonHonGiaBan
+alter trigger tri_giaNhapLonHonGiaBan
 on mathang for insert
 as begin
 	declare dsmh cursor dynamic scroll
@@ -101,6 +101,8 @@ as begin
 			where mamh = @mamh
 		fetch next from dsmh into @mamh, @dongia, @gianhap
 	end
+	close dsmh
+	deallocate dsmh
 end
 -- trigger ko so luong mat hang am
 create trigger tri_InsertSoLuongKoAm
@@ -223,3 +225,33 @@ as begin
 		where manv in (select deleted.manv from deleted)
 	end
 end
+
+create trigger trig_them_ttd
+on khachhang
+for insert
+as 
+begin
+	if exists ( select * from inserted
+        inner join thetichdiem on inserted.makh = thetichdiem.makh
+    )
+		begin
+			rollback tran
+			print N'Thẻ tích điểm đã tồn tại cho một hoặc nhiều khách hàng';
+			return
+		end
+
+    insert into thetichdiem (makh, diemtichluy)
+    select makh, 0
+    from inserted
+end
+
+create trigger trig_delete_kh
+on khachhang
+instead of delete
+as begin
+		update thetichdiem
+		set diemtichluy = 0
+		where makh in (select deleted.makh from deleted)
+end
+
+
